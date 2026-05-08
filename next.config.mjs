@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Force redeploy - 1
 const nextConfig = {
     images: {
         remotePatterns: [

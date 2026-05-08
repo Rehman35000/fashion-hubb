@@ -1,19 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-    scroll-behavior: smooth;
-}
-
 @layer base {
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
   }
 
+  body {
+    @apply bg-cinnamon-accent text-cinnamon-secondary font-sans antialiased;
+    cursor: default;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+
+  ::selection {
+    @apply bg-cinnamon-primary/20 text-cinnamon-primary;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-cinnamon-accent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-cinnamon-primary/20 rounded-full hover:bg-cinnamon-primary/40 transition-colors;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Interactive Hover States */
+.hover-lift {
+  @apply transition-all duration-500 ease-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+  @apply shadow-xl shadow-cinnamon-primary/5;
+}
+
+.hover-scale {
+  @apply transition-transform duration-700 ease-out;
+}
+
+.hover-scale:hover {
+  @apply scale-105;
 }

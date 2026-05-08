@@ -8,65 +8,83 @@ import Navbar from "@/components/Navbar";
 import Loading from "@/components/Loading";
 
 const MyOrders = () => {
-
-    const { currency } = useAppContext();
-
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const fetchOrders = async () => {
-        setOrders(orderDummyData)
-        setLoading(false);
-    }
-
-    useEffect(() => {
-        fetchOrders();
-    }, []);
+    const { currency, orders, products } = useAppContext();
 
     return (
         <>
             <Navbar />
-            <div className="flex flex-col justify-between px-6 md:px-16 lg:px-32 py-6 min-h-screen">
-                <div className="space-y-5">
-                    <h2 className="text-lg font-medium mt-6">My Orders</h2>
-                    {loading ? <Loading /> : (<div className="max-w-5xl border-t border-gray-300 text-sm">
-                        {orders.map((order, index) => (
-                            <div key={index} className="flex flex-col md:flex-row gap-5 justify-between p-5 border-b border-gray-300">
-                                <div className="flex-1 flex gap-5 max-w-80">
-                                    <Image
-                                        className="max-w-16 max-h-16 object-cover"
-                                        src={assets.box_icon}
-                                        alt="box_icon"
-                                    />
-                                    <p className="flex flex-col gap-3">
-                                        <span className="font-medium text-base">
-                                            {order.items.map((item) => item.product.name + ` x ${item.quantity}`).join(", ")}
-                                        </span>
-                                        <span>Items : {order.items.length}</span>
-                                    </p>
+            <div className="flex flex-col px-6 md:px-16 lg:px-32 py-12 min-h-screen bg-cinnamon-accent/20">
+                <div className="max-w-6xl mx-auto w-full">
+                    <div className="flex flex-col gap-2 mb-12">
+                        <h2 className="text-3xl md:text-5xl font-serif font-bold text-cinnamon-primary italic">My Orders</h2>
+                        <p className="text-xs uppercase tracking-[0.3em] text-cinnamon-primary/40 font-bold">Track your latest purchases</p>
+                    </div>
+
+                    {orders.length === 0 ? (
+                        <div className="bg-white rounded-3xl p-20 text-center border border-cinnamon-primary/5 shadow-sm">
+                            <Image src={assets.box_icon} className="w-12 h-12 mx-auto opacity-20 mb-6" alt="empty" />
+                            <p className="text-cinnamon-primary/40 font-serif italic text-xl">No orders placed yet.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            {orders.map((order, index) => (
+                                <div key={index} className="bg-white rounded-3xl p-8 border border-cinnamon-primary/5 shadow-sm hover:shadow-md transition-shadow animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                                    <div className="flex flex-col lg:flex-row gap-10 justify-between">
+                                        <div className="flex-1 space-y-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-2xl bg-cinnamon-accent flex items-center justify-center">
+                                                    <Image className="w-5 h-5 opacity-40" src={assets.box_icon} alt="box" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] uppercase tracking-widest text-cinnamon-primary/40 font-bold">Order ID</p>
+                                                    <p className="text-sm font-bold text-cinnamon-primary">#{order._id.slice(-8)}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                {order.items.map((item, idx) => {
+                                                    const product = products.find(p => p._id === (item._id || item.product?._id));
+                                                    return (
+                                                        <div key={idx} className="flex items-center gap-4">
+                                                            <div className="w-10 h-12 rounded-lg overflow-hidden bg-cinnamon-accent">
+                                                                {product?.image && <Image src={product.image[0]} width={100} height={120} className="w-full h-full object-cover" alt="p" />}
+                                                            </div>
+                                                            <p className="text-sm text-cinnamon-primary/80 font-medium italic">
+                                                                {product?.name || "Product"} <span className="text-xs text-cinnamon-primary/40 not-italic ml-2">x {item.quantity}</span>
+                                                            </p>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        <div className="lg:w-1/3 space-y-2 border-l border-cinnamon-primary/5 pl-0 lg:pl-10 pt-6 lg:pt-0">
+                                             <p className="text-[10px] uppercase tracking-widest text-cinnamon-primary/40 font-bold mb-4">Delivery Address</p>
+                                             <p className="text-sm font-bold text-cinnamon-primary">{order.address.fullName}</p>
+                                             <p className="text-xs text-cinnamon-primary/60 font-light leading-relaxed">
+                                                {order.address.area}<br/>
+                                                {order.address.city}, {order.address.state}<br/>
+                                                {order.address.phoneNumber}
+                                             </p>
+                                        </div>
+
+                                        <div className="lg:w-1/4 flex flex-col justify-between items-end gap-6 pt-6 lg:pt-0">
+                                            <div className="text-right">
+                                                <p className="text-[10px] uppercase tracking-widest text-cinnamon-primary/40 font-bold">Total Amount</p>
+                                                <p className="text-2xl font-serif font-bold text-cinnamon-primary">{currency}{order.amount.toLocaleString()}.00</p>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-2">
+                                                <span className="px-4 py-1.5 bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-widest rounded-full border border-green-100">
+                                                    {order.status || 'Processing'}
+                                                </span>
+                                                <p className="text-[10px] text-cinnamon-primary/40 uppercase tracking-widest font-bold">Placed on {order.date}</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p>
-                                        <span className="font-medium">{order.address.fullName}</span>
-                                        <br />
-                                        <span >{order.address.area}</span>
-                                        <br />
-                                        <span>{`${order.address.city}, ${order.address.state}`}</span>
-                                        <br />
-                                        <span>{order.address.phoneNumber}</span>
-                                    </p>
-                                </div>
-                                <p className="font-medium my-auto">{currency}{order.amount}</p>
-                                <div>
-                                    <p className="flex flex-col">
-                                        <span>Method : COD</span>
-                                        <span>Date : {new Date(order.date).toLocaleDateString()}</span>
-                                        <span>Payment : Pending</span>
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>)}
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
             <Footer />
@@ -74,4 +92,4 @@ const MyOrders = () => {
     );
 };
 
-export default MyOrders;
+export default MyOrders;

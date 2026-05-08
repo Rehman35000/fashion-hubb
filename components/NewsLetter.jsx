@@ -1,25 +1,70 @@
-import React from "react";
+import React, { useState } from "react";
+import toast from "react-hot-toast";
 
 const NewsLetter = () => {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Welcome to the Inner Circle!");
+        setEmail("");
+      } else {
+        toast.error(data.message || "Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Failed to subscribe. Please check your connection.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center text-center space-y-2 pt-8 pb-14">
-      <h1 className="md:text-4xl text-2xl font-medium">
-        Subscribe now & get 20% off
-      </h1>
-      <p className="md:text-base text-gray-500/80 pb-8">
-        Lorem Ipsum is simply dummy text of the printing and typesetting
-        industry.
-      </p>
-      <div className="flex items-center justify-between max-w-2xl w-full md:h-14 h-12">
-        <input
-          className="border border-gray-500/30 rounded-md h-full border-r-0 outline-none w-full rounded-r-none px-3 text-gray-500"
-          type="text"
-          placeholder="Enter your email id"
-        />
-        <button className="md:px-12 px-8 h-full text-white bg-orange-600 rounded-md rounded-l-none">
-          Subscribe
-        </button>
+    <div className="flex flex-col items-center justify-center text-center space-y-6 pt-20 pb-32 max-w-4xl mx-auto">
+      <div className="space-y-3">
+        <h2 className="text-3xl md:text-5xl font-serif font-bold text-cinnamon-primary">
+          Join the Inner Circle
+        </h2>
+        <p className="md:text-lg text-cinnamon-primary/60 font-light">
+          Subscribe to receive exclusive offers, early access to new collections, and style inspiration.
+        </p>
       </div>
+
+      <form 
+        onSubmit={handleSubmit}
+        className="flex items-center justify-between w-full max-w-lg h-14 mt-4 border-b border-cinnamon-primary/30 focus-within:border-cinnamon-primary transition-colors duration-300"
+      >
+        <input
+          className="bg-transparent h-full outline-none w-full px-2 text-cinnamon-primary placeholder:text-cinnamon-primary/30 font-light"
+          type="email"
+          placeholder="Enter your email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <button 
+          disabled={loading}
+          className="px-8 h-full text-cinnamon-primary uppercase tracking-[0.2em] text-xs font-bold hover:text-cinnamon-secondary transition-colors disabled:opacity-50"
+        >
+          {loading ? "Subscribing..." : "Subscribe"}
+        </button>
+      </form>
+      
+      <p className="text-[10px] uppercase tracking-widest text-cinnamon-primary/40">
+        By subscribing, you agree to our Privacy Policy
+      </p>
     </div>
   );
 };

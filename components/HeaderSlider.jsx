@@ -6,27 +6,26 @@ const HeaderSlider = () => {
   const sliderData = [
     {
       id: 1,
-      title: "Experience Pure Sound - Your Perfect Headphones Awaits!",
-      offer: "Limited Time Offer 30% Off",
-      buttonText1: "Buy now",
-      buttonText2: "Find more",
-      imgSrc: assets.header_headphone_image,
+      title: "The Perfect Tailored Pant",
+      offer: "New Season Essentials",
+      buttonText1: "Shop Now",
+      imgSrc: assets.girl_with_headphone_image,
     },
     {
       id: 2,
-      title: "Next-Level Gaming Starts Here - Discover PlayStation 5 Today!",
-      offer: "Hurry up only few lefts!",
-      buttonText1: "Shop Now",
-      buttonText2: "Explore Deals",
-      imgSrc: assets.header_playstation_image,
+      title: "The Art of Sartorial Craft",
+      offer: "Artisan Series",
+      buttonText1: "shop all",
+    
+      imgSrc: assets.girl_with_earphone_image,
     },
     {
       id: 3,
-      title: "Power Meets Elegance - Apple MacBook Pro is Here for you!",
-      offer: "Exclusive Deal 40% Off",
-      buttonText1: "Order Now",
-      buttonText2: "Learn More",
-      imgSrc: assets.header_macbook_image,
+      title: "Minimalism in Motion",
+      offer: "Sculptural Silhouettes",
+      buttonText1: "shop all",
+    
+      imgSrc: assets.boy_with_laptop_image,
     },
   ];
 
@@ -35,7 +34,7 @@ const HeaderSlider = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % sliderData.length);
-    }, 3000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [sliderData.length]);
 
@@ -44,9 +43,9 @@ const HeaderSlider = () => {
   };
 
   return (
-    <div className="overflow-hidden relative w-full">
+    <div className="overflow-hidden relative w-full pt-10">
       <div
-        className="flex transition-transform duration-700 ease-in-out"
+        className="flex transition-transform duration-1000 ease-in-out"
         style={{
           transform: `translateX(-${currentSlide * 100}%)`,
         }}
@@ -54,26 +53,29 @@ const HeaderSlider = () => {
         {sliderData.map((slide, index) => (
           <div
             key={slide.id}
-            className="flex flex-col-reverse md:flex-row items-center justify-between bg-[#E6E9F2] py-8 md:px-14 px-5 mt-6 rounded-xl min-w-full"
+            className="flex flex-col-reverse md:flex-row items-center justify-between bg-cinnamon-primary/5 py-12 md:px-20 px-6 rounded-3xl min-w-full"
           >
-            <div className="md:pl-8 mt-10 md:mt-0">
-              <p className="md:text-base text-orange-600 pb-1">{slide.offer}</p>
-              <h1 className="max-w-lg md:text-[40px] md:leading-[48px] text-2xl font-semibold">
+            <div className="md:w-1/2 mt-10 md:mt-0 space-y-6">
+              <p className="text-sm md:text-sm uppercase tracking-[0.3em] text-cinnamon-primary/70 font-sans">
+                {slide.offer}
+              </p>
+              <h1 className="max-w-xl text-1xl md:text-6xl font-serif font-bold text-cinnamon-primary leading-tight">
                 {slide.title}
               </h1>
-              <div className="flex items-center mt-4 md:mt-6 ">
-                <button className="md:px-10 px-7 md:py-2.5 py-2 bg-orange-600 rounded-full text-white font-medium">
+              <div className="flex items-center gap-6 pt-4">
+                <button className="px-2 py-2 bg-cinnamon-primary text-white text-xs uppercase tracking-widest hover:bg-cinnamon-secondary transition-all duration-300">
                   {slide.buttonText1}
                 </button>
-                <button className="group flex items-center gap-2 px-6 py-2.5 font-medium">
+                {/* <button className="group flex items-center gap-3 text-xs uppercase tracking-widest text-cinnamon-primary font-semibold">
                   {slide.buttonText2}
-                  <Image className="group-hover:translate-x-1 transition" src={assets.arrow_icon} alt="arrow_icon" />
-                </button>
+                  <div className="w-8 h-[1px] bg-cinnamon-primary group-hover:w-12 transition-all duration-300"></div>
+                </button> */}
               </div>
             </div>
-            <div className="flex items-center flex-1 justify-center">
+            <div className="md:w-1/2 flex items-center justify-center relative">
+              <div className="absolute inset-0 bg-cinnamon-primary/10 rounded-full blur-3xl opacity-30 transform scale-75"></div>
               <Image
-                className="md:w-72 w-48"
+                className="relative z-10 w-64 md:w-[450px] object-contain drop-shadow-2xl"
                 src={slide.imgSrc}
                 alt={`Slide ${index + 1}`}
               />
@@ -82,15 +84,15 @@ const HeaderSlider = () => {
         ))}
       </div>
 
-      <div className="flex items-center justify-center gap-2 mt-8">
+      <div className="flex items-center justify-center gap-3 mt-10">
         {sliderData.map((_, index) => (
-          <div
+          <button
             key={index}
             onClick={() => handleSlideChange(index)}
-            className={`h-2 w-2 rounded-full cursor-pointer ${
-              currentSlide === index ? "bg-orange-600" : "bg-gray-500/30"
+            className={`h-1.5 transition-all duration-500 rounded-full ${
+              currentSlide === index ? "w-8 bg-cinnamon-primary" : "w-2 bg-cinnamon-primary/20"
             }`}
-          ></div>
+          ></button>
         ))}
       </div>
     </div>

@@ -1,125 +1,187 @@
 import { addressDummyData } from "@/assets/assets";
 import { useAppContext } from "@/context/AppContext";
 import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
-const OrderSummary = () => {
-
-  const { currency, router, getCartCount, getCartAmount } = useAppContext()
+const OrderSummary = ({ isCheckout }) => {
+  const { currency, router, getCartCount, getCartAmount, setCartItems, orders, setOrders } = useAppContext()
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
+  const [email, setEmail] = useState("");
   const [userAddresses, setUserAddresses] = useState([]);
 
   const fetchUserAddresses = async () => {
     setUserAddresses(addressDummyData);
   }
 
-  const handleAddressSelect = (address) => {
-    setSelectedAddress(address);
-    setIsDropdownOpen(false);
-  };
+  const [promoCode, setPromoCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+
+  const applyPromo = () => {
+    if (promoCode.toUpperCase() === "CINNAMON10") {
+      setDiscount(0.1);
+      toast.success("10% Discount Applied!");
+    } else {
+      toast.error("Invalid Promo Code");
+    }
+  }
 
   const createOrder = async () => {
+    // If we're already in checkout mode, the form handles validation
+    if (isCheckout) {
+       // Proceed with order creation logic...
+       // For now, let's keep it simple as we're focusing on UI cleanup
+    }
 
+    if (!email && !isCheckout) {
+      toast.error("Please enter your email address");
+      return;
+    }
+    // ... rest of validation logic
   }
 
   useEffect(() => {
     fetchUserAddresses();
   }, [])
 
+  const subtotal = getCartAmount();
+  const discountAmount = Math.floor(subtotal * discount);
+  const tax = Math.floor((subtotal - discountAmount) * 0.02);
+  const total = subtotal - discountAmount + tax;
+
   return (
-    <div className="w-full md:w-96 bg-gray-500/5 p-5">
-      <h2 className="text-xl md:text-2xl font-medium text-gray-700">
+    <div className="w-full md:w-[400px] bg-white border border-cinnamon-primary/10 p-8 rounded-2xl shadow-sm animate-fade-in sticky top-32">
+      <h2 className="text-2xl font-serif font-bold text-cinnamon-primary mb-8">
         Order Summary
       </h2>
-      <hr className="border-gray-500/30 my-5" />
-      <div className="space-y-6">
-        <div>
-          <label className="text-base font-medium uppercase text-gray-600 block mb-2">
-            Select Address
-          </label>
-          <div className="relative inline-block w-full text-sm border">
-            <button
-              className="peer w-full text-left px-4 pr-2 py-2 bg-white text-gray-700 focus:outline-none"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            >
-              <span>
-                {selectedAddress
-                  ? `${selectedAddress.fullName}, ${selectedAddress.area}, ${selectedAddress.city}, ${selectedAddress.state}`
-                  : "Select Address"}
-              </span>
-              <svg className={`w-5 h-5 inline float-right transition-transform duration-200 ${isDropdownOpen ? "rotate-0" : "-rotate-90"}`}
-                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#6B7280"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+      
+      <div className="space-y-8">
+        {!isCheckout && (
+          <>
+            {/* Email Integration Section */}
+            <div className="space-y-3">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-cinnamon-primary/60 font-bold block">
+                Contact Information
+              </label>
+              <input
+                type="email"
+                placeholder="email@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full outline-none py-3 px-4 rounded-xl border border-cinnamon-primary/10 focus:border-cinnamon-primary transition-all bg-cinnamon-accent/30 text-sm placeholder:text-cinnamon-primary/30"
+                required
+              />
+            </div>
 
-            {isDropdownOpen && (
-              <ul className="absolute w-full bg-white border shadow-md mt-1 z-10 py-1.5">
-                {userAddresses.map((address, index) => (
-                  <li
-                    key={index}
-                    className="px-4 py-2 hover:bg-gray-500/10 cursor-pointer"
-                    onClick={() => handleAddressSelect(address)}
-                  >
-                    {address.fullName}, {address.area}, {address.city}, {address.state}
-                  </li>
-                ))}
-                <li
-                  onClick={() => router.push("/add-address")}
-                  className="px-4 py-2 hover:bg-gray-500/10 cursor-pointer text-center"
+            <div className="space-y-3">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-cinnamon-primary/60 font-bold block">
+                Delivery Address
+              </label>
+              <div className="relative inline-block w-full text-sm">
+                <button
+                  className="peer w-full text-left px-4 py-3 bg-cinnamon-accent/30 border border-cinnamon-primary/10 rounded-xl text-cinnamon-primary focus:outline-none focus:border-cinnamon-primary transition-all flex items-center justify-between"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  + Add New Address
-                </li>
-              </ul>
-            )}
-          </div>
-        </div>
+                  <span className="truncate pr-4">
+                    {selectedAddress
+                      ? `${selectedAddress.fullName}, ${selectedAddress.area}`
+                      : "Select Address"}
+                  </span>
+                  <svg className={`w-4 h-4 opacity-40 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
 
-        <div>
-          <label className="text-base font-medium uppercase text-gray-600 block mb-2">
-            Promo Code
-          </label>
-          <div className="flex flex-col items-start gap-3">
-            <input
-              type="text"
-              placeholder="Enter promo code"
-              className="flex-grow w-full outline-none p-2.5 text-gray-600 border"
-            />
-            <button className="bg-orange-600 text-white px-9 py-2 hover:bg-orange-700">
-              Apply
-            </button>
-          </div>
-        </div>
+                {isDropdownOpen && (
+                  <ul className="absolute w-full bg-white border border-cinnamon-primary/10 shadow-2xl mt-2 z-20 rounded-xl overflow-hidden py-2 animate-in fade-in slide-in-from-top-2">
+                    {userAddresses.map((address, index) => (
+                      <li
+                        key={index}
+                        className="px-4 py-3 hover:bg-cinnamon-primary/5 cursor-pointer text-cinnamon-primary/80 hover:text-cinnamon-primary transition-colors text-xs"
+                        onClick={() => {
+                          setSelectedAddress(address);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        {address.fullName}, {address.area}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
 
-        <hr className="border-gray-500/30 my-5" />
+            {/* Promo Code Section */}
+            <div className="space-y-3">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-cinnamon-primary/60 font-bold block">
+                Promo Code
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="CINNAMON10"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  className="flex-1 outline-none py-3 px-4 rounded-xl border border-cinnamon-primary/10 focus:border-cinnamon-primary transition-all bg-cinnamon-accent/30 text-sm placeholder:text-cinnamon-primary/20 uppercase tracking-widest"
+                />
+                <button 
+                  onClick={applyPromo}
+                  className="px-4 py-3 bg-cinnamon-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-cinnamon-secondary transition-all"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
-        <div className="space-y-4">
-          <div className="flex justify-between text-base font-medium">
-            <p className="uppercase text-gray-600">Items {getCartCount()}</p>
-            <p className="text-gray-800">{currency}{getCartAmount()}</p>
+        <div className="space-y-4 border-t border-cinnamon-primary/10 pt-6">
+          <div className="flex justify-between text-sm">
+            <p className="text-cinnamon-primary/60">Subtotal</p>
+            <p className="font-medium text-cinnamon-primary">{currency}{subtotal.toLocaleString()}.00</p>
           </div>
-          <div className="flex justify-between">
-            <p className="text-gray-600">Shipping Fee</p>
-            <p className="font-medium text-gray-800">Free</p>
+          
+          {discount > 0 && (
+            <div className="flex justify-between text-sm text-green-700 animate-fade-in">
+              <p>Discount (10%)</p>
+              <p>-{currency}{discountAmount.toLocaleString()}.00</p>
+            </div>
+          )}
+
+          
+          <div className="flex justify-between text-sm text-cinnamon-primary/60">
+            <p>Shipping</p>
+            <p className="font-medium text-cinnamon-primary">Rs 299.00</p>
           </div>
-          <div className="flex justify-between">
-            <p className="text-gray-600">Tax (2%)</p>
-            <p className="font-medium text-gray-800">{currency}{Math.floor(getCartAmount() * 0.02)}</p>
+          
+          <div className="flex justify-between text-sm text-cinnamon-primary/60">
+            <p>Tax (2%)</p>
+            <p>{currency}{tax.toLocaleString()}.00</p>
           </div>
-          <div className="flex justify-between text-lg md:text-xl font-medium border-t pt-3">
-            <p>Total</p>
-            <p>{currency}{getCartAmount() + Math.floor(getCartAmount() * 0.02)}</p>
+          
+          <div className="flex justify-between items-end pt-4">
+            <p className="text-cinnamon-primary/60 text-[10px] uppercase tracking-[0.2em] font-bold">Total</p>
+            <p className="text-3xl font-serif font-bold text-cinnamon-primary leading-none">
+              {currency}{(total + 299).toLocaleString()}.00
+            </p>
           </div>
         </div>
       </div>
 
-      <button onClick={createOrder} className="w-full bg-orange-600 text-white py-3 mt-5 hover:bg-orange-700">
-        Place Order
+      <button 
+        onClick={createOrder} 
+        className="w-full bg-cinnamon-primary text-white py-4 mt-10 rounded-xl font-bold uppercase tracking-[0.2em] text-xs hover:bg-cinnamon-secondary transition-all shadow-lg shadow-cinnamon-primary/20"
+      >
+        Complete Order
       </button>
+      
+      <p className="text-[10px] text-center text-cinnamon-primary/40 mt-6 uppercase tracking-widest font-light">
+        Secure SSL Encrypted Checkout
+      </p>
     </div>
   );
 };
 
-export default OrderSummary;
+export default OrderSummary;

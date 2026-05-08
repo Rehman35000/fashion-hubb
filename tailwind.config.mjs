@@ -10,6 +10,16 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        cinnamon: {
+          primary: "#5C2B14", // Deep Brown
+          secondary: "#2B2B2B", // Charcoal
+          accent: "#FDF6F5", // Cream Background
+          text: "#1A1A1A",
+        }
+      },
+      fontFamily: {
+        serif: ["'Playfair Display'", 'serif'],
+        sans: ["'Outfit'", 'sans-serif'],
       },
       gridTemplateColumns:{
         'auto': 'repeat(auto-fit, minmax(200px, 1fr))'

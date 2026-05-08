@@ -4,59 +4,64 @@ import Image from 'next/image';
 import { useAppContext } from '@/context/AppContext';
 
 const ProductCard = ({ product }) => {
-
     const { currency, router } = useAppContext()
+
+    // Simulate badges for demonstration (In a real app, these would come from product data)
+    const isSoldOut = product.name.includes("Wool") || product.name.includes("Blazer"); 
+    const isSale = product.offerPrice < product.price;
 
     return (
         <div
             onClick={() => { router.push('/product/' + product._id); scrollTo(0, 0) }}
-            className="flex flex-col items-start gap-0.5 max-w-[200px] w-full cursor-pointer"
+            className="flex flex-col items-start gap-4 cursor-pointer group hover-lift"
         >
-            <div className="cursor-pointer group relative bg-gray-500/10 rounded-lg w-full h-52 flex items-center justify-center">
+            <div className="relative overflow-hidden bg-cinnamon-accent w-full aspect-[4/5] flex items-center justify-center transition-all duration-500">
                 <Image
                     src={product.image[0]}
                     alt={product.name}
-                    className="group-hover:scale-105 transition object-cover w-4/5 h-4/5 md:w-full md:h-full"
+                    className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
                     width={800}
                     height={800}
                 />
-                <button className="absolute top-2 right-2 bg-white p-2 rounded-full shadow-md">
-                    <Image
-                        className="h-3 w-3"
-                        src={assets.heart_icon}
-                        alt="heart_icon"
-                    />
-                </button>
-            </div>
+                
+                {/* Badges */}
+                <div className="absolute bottom-4 left-4 flex flex-col gap-2">
+                    {isSale && (
+                        <span className="bg-black text-white text-[10px] px-3 py-1.5 rounded-full font-light tracking-wider">
+                            Sale
+                        </span>
+                    )}
+                </div>
 
-            <p className="md:text-base font-medium pt-2 w-full truncate">{product.name}</p>
-            <p className="w-full text-xs text-gray-500/70 max-sm:hidden truncate">{product.description}</p>
-            <div className="flex items-center gap-2">
-                <p className="text-xs">{4.5}</p>
-                <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, index) => (
+                {/* Heart Overlay */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <button className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm hover:bg-white transition-colors">
                         <Image
-                            key={index}
-                            className="h-3 w-3"
-                            src={
-                                index < Math.floor(4)
-                                    ? assets.star_icon
-                                    : assets.star_dull_icon
-                            }
-                            alt="star_icon"
+                            className="h-3.5 w-3.5"
+                            src={assets.heart_icon}
+                            alt="heart"
                         />
-                    ))}
+                    </button>
                 </div>
             </div>
 
-            <div className="flex items-end justify-between w-full mt-1">
-                <p className="text-base font-medium">{currency}{product.offerPrice}</p>
-                <button className=" max-sm:hidden px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition">
-                    Buy now
-                </button>
+            <div className="flex flex-col items-start gap-1 w-full">
+                <p className="text-xs md:text-sm font-light text-cinnamon-primary/80 tracking-wide">
+                    {product.name}
+                </p>
+                <div className="flex flex-col items-start">
+                    {isSale && product.price > product.offerPrice && (
+                        <p className="text-xs text-cinnamon-primary/40 line-through">
+                            {currency}{product.price.toLocaleString()}.00 PKR
+                        </p>
+                    )}
+                    <p className="text-sm md:text-base font-medium text-cinnamon-primary">
+                        {currency}{product.offerPrice.toLocaleString()}.00 PKR
+                    </p>
+                </div>
             </div>
         </div>
     )
 }
 
-export default ProductCard
+export default ProductCard

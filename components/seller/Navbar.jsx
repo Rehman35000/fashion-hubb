@@ -8,9 +8,18 @@ const Navbar = () => {
   const { router } = useAppContext()
 
   return (
-    <div className='flex items-center px-4 md:px-8 py-3 justify-between border-b'>
-      <Image onClick={()=>router.push('/')} className='w-28 lg:w-32 cursor-pointer' src={assets.logo} alt="" />
-      <button className='bg-gray-600 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-full text-xs sm:text-sm'>Logout</button>
+    <div className='flex items-center px-6 md:px-12 py-4 justify-between border-b border-cinnamon-primary/10 bg-cinnamon-accent'>
+       <div 
+          className="cursor-pointer"
+          onClick={() => router.push('/')}
+        >
+          <h1 className="text-xl md:text-2xl font-bold font-serif tracking-tight text-cinnamon-primary">
+            QuickCart <span className="text-[10px] uppercase tracking-widest font-sans font-light opacity-60 ml-2">Seller Panel</span>
+          </h1>
+        </div>
+      <button className='bg-cinnamon-primary text-white px-6 py-2 rounded-full text-xs font-medium hover:bg-cinnamon-secondary transition-all'>
+        Logout
+      </button>
     </div>
   )
 }

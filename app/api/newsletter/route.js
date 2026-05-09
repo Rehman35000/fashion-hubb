@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const apiKey = process.env.RESEND_API_KEY;
-const resend = apiKey ? new Resend(apiKey) : null;
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
 
 export async function POST(request) {
   try {
-    if (!resend) {
-      console.error("Resend API Key is missing in .env");
-      return NextResponse.json({ success: false, message: "Email service not configured. Please add RESEND_API_KEY and restart server." }, { status: 500 });
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      return NextResponse.json({ success: false, message: "Email credentials missing" }, { status: 500 });
     }
 
     const { email } = await request.json();
@@ -17,9 +21,8 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: "Email is required" }, { status: 400 });
     }
 
-    // Send Welcome Email to Subscriber
-    const { data, error } = await resend.emails.send({
-      from: 'Fashion Hubb <onboarding@resend.dev>',
+    const mailOptions = {
+      from: `"Fashion Hubb" <${process.env.GMAIL_USER}>`,
       to: email,
       subject: 'Welcome to the Fashion Hubb Inner Circle!',
       html: `
@@ -41,24 +44,18 @@ export async function POST(request) {
           </p>
         </div>
       `
-    });
+    };
 
-    if (error) {
-      console.error("Resend Newsletter Error:", error);
-      return NextResponse.json({ 
-        success: false, 
-        message: `Resend Error: ${error.message}. Note: In test mode, you can only subscribe with your own Resend account email.` 
-      }, { status: 400 });
-    }
+    const info = await transporter.sendMail(mailOptions);
 
     return NextResponse.json({ 
       success: true, 
       message: "Subscribed successfully",
-      trackingId: data?.id 
+      trackingId: info.messageId
     }, { status: 200 });
 
   } catch (error) {
-    console.error("Newsletter API Error:", error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    console.error("Newsletter Gmail Error:", error);
+    return NextResponse.json({ success: false, message: "Subscription Error: " + error.message }, { status: 500 });
   }
 }

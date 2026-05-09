@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const apiKey = process.env.RESEND_API_KEY;
-const resend = apiKey ? new Resend(apiKey) : null;
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
 
 export async function POST(request) {
   try {
-    if (!resend) {
-      console.error("Resend API Key is missing in .env");
-      return NextResponse.json({ success: false, message: "Email service not configured. Please add RESEND_API_KEY and restart server." }, { status: 500 });
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      return NextResponse.json({ success: false, message: "Email credentials missing" }, { status: 500 });
     }
 
     const { name, email, subject, message } = await request.json();
@@ -18,8 +22,8 @@ export async function POST(request) {
     }
 
     // 1. Send Email to ADMIN
-    const { data: adminData, error: adminError } = await resend.emails.send({
-      from: 'Fashion Hubb Contact <onboarding@resend.dev>',
+    const adminMailOptions = {
+      from: `"Fashion Hubb Contact" <${process.env.GMAIL_USER}>`,
       to: 'thefashionhubbstore1@gmail.com',
       subject: `Contact Form: ${subject || 'New Message'}`,
       html: `
@@ -34,11 +38,11 @@ export async function POST(request) {
           </div>
         </div>
       `
-    });
+    };
 
     // 2. Send Confirmation Email to USER
-    const { data: userData, error: userError } = await resend.emails.send({
-      from: 'Fashion Hubb <onboarding@resend.dev>',
+    const userMailOptions = {
+      from: `"Fashion Hubb" <${process.env.GMAIL_USER}>`,
       to: email,
       subject: 'We received your message!',
       html: `
@@ -49,27 +53,22 @@ export async function POST(request) {
           <p style="margin-top: 30px;">Best regards,<br>The Fashion Hubb Team</p>
         </div>
       `
-    });
+    };
 
-    if (adminError || userError) {
-      console.error("Resend Contact Error:", adminError || userError);
-      return NextResponse.json({ 
-        success: false, 
-        message: `Resend Error: ${(adminError || userError).message}. Note: In test mode, you can only send messages from/to your own Resend account email.` 
-      }, { status: 400 });
-    }
+    const adminInfo = await transporter.sendMail(adminMailOptions);
+    const userInfo = await transporter.sendMail(userMailOptions);
 
     return NextResponse.json({ 
       success: true, 
       message: "Message sent successfully",
       tracking: {
-        adminEmailId: adminData?.id,
-        userEmailId: userData?.id
+        adminEmailId: adminInfo.messageId,
+        userEmailId: userInfo.messageId
       }
     }, { status: 200 });
 
   } catch (error) {
-    console.error("Contact API Error:", error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    console.error("Contact Gmail Error:", error);
+    return NextResponse.json({ success: false, message: "Contact Error: " + error.message }, { status: 500 });
   }
 }

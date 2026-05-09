@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "next": "15.1.6",
+    "nodemailer": "^8.0.7",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "react-hot-toast": "^2.5.1",
-    "resend": "^6.12.3"
+    "react-hot-toast": "^2.5.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

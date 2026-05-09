@@ -1,25 +1,26 @@
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-// Initialize Resend with the API Key from environment variables
-const apiKey = process.env.RESEND_API_KEY;
-const resend = apiKey ? new Resend(apiKey) : null;
+// Initialize Nodemailer Transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
 
 export async function POST(request) {
   try {
-    if (!resend) {
-      console.error("Resend API Key is missing in .env");
-      return NextResponse.json({ success: false, message: "Email service not configured. Please add RESEND_API_KEY to your .env file and restart the server." }, { status: 500 });
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      return NextResponse.json({ success: false, message: "Email credentials missing" }, { status: 500 });
     }
 
-    const body = await request.json();
-    const { email, address, orderDetails } = body;
-
-    console.log("Attempting to send emails to:", email, "and admin");
+    const { email, address, orderDetails } = await request.json();
 
     // 1. Send Email to CUSTOMER
-    const { data: customerData, error: customerError } = await resend.emails.send({
-      from: 'Fashion Hubb <onboarding@resend.dev>',
+    const customerMailOptions = {
+      from: `"Fashion Hubb" <${process.env.GMAIL_USER}>`,
       to: email,
       subject: 'Order Confirmation - Fashion Hubb',
       html: `
@@ -34,15 +35,11 @@ export async function POST(request) {
           <p>We'll notify you once your package is on its way.</p>
         </div>
       `
-    });
-
-    if (customerError) {
-        console.error("Resend Customer Email Error:", customerError);
-    }
+    };
 
     // 2. Send Email to ADMIN
-    const { data: adminData, error: adminError } = await resend.emails.send({
-      from: 'Fashion Hubb <onboarding@resend.dev>',
+    const adminMailOptions = {
+      from: `"Fashion Hubb System" <${process.env.GMAIL_USER}>`,
       to: 'thefashionhubbstore1@gmail.com',
       subject: 'NEW ORDER RECEIVED',
       html: `
@@ -54,31 +51,23 @@ export async function POST(request) {
           <p><strong>Address:</strong> ${address.address}, ${address.city}</p>
         </div>
       `
-    });
+    };
 
-    if (adminError) {
-        console.error("Resend Admin Email Error:", adminError);
-    }
-
-    if (customerError || adminError) {
-        const errorMessage = customerError?.message || adminError?.message || "Failed to send one or more emails.";
-        return NextResponse.json({ 
-            success: false, 
-            message: `Resend Error: ${errorMessage}. Note: In test mode, you can only send to your own Resend account email.` 
-        }, { status: 400 });
-    }
+    // Send emails
+    const customerInfo = await transporter.sendMail(customerMailOptions);
+    const adminInfo = await transporter.sendMail(adminMailOptions);
 
     return NextResponse.json({ 
       success: true, 
-      message: "Emails sent successfully",
+      message: "Emails sent successfully via Gmail",
       tracking: {
-        customerEmailId: customerData?.id,
-        adminEmailId: adminData?.id
+        customerEmailId: customerInfo.messageId,
+        adminEmailId: adminInfo.messageId
       }
     }, { status: 200 });
 
   } catch (error) {
-    console.error("Critical Email API Error:", error);
-    return NextResponse.json({ success: false, message: "Internal Server Error: " + error.message }, { status: 500 });
+    console.error("Gmail Error:", error);
+    return NextResponse.json({ success: false, message: "Email Error: " + error.message }, { status: 500 });
   }
 }
